@@ -1,6 +1,6 @@
 # CPs-456-Flutter-CPAD
 
-##Proposta
+## Proposta
 
 Problema: estudantes universitários têm dificuldade de controlar gastos pessoais e organizar despesas compartilhadas (contas de casa, saídas em grupo, rachar delivery/Uber) — normalmente resolvido de forma manual, via planilha ou "fiado" sem registro.
 
