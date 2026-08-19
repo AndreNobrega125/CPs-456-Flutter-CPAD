@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../widgets/poupai_logo.dart';
 
 class PerfilScreen extends StatelessWidget {
   const PerfilScreen({super.key});
@@ -13,10 +14,10 @@ class PerfilScreen extends StatelessWidget {
           Center(
             child: Column(
               children: [
-                const CircleAvatar(radius: 40, child: Icon(Icons.person, size: 40)),
+                const PoupAiLogo(tamanho: 80),
                 const SizedBox(height: 12),
                 const Text('Estudante FIAP', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                Text('Turma 2CCPG', style: TextStyle(color: Colors.grey[600])),
+                Text('Turma 2CCPG', style: TextStyle(color: Colors.grey[700])),
               ],
             ),
           ),
@@ -54,7 +55,7 @@ class _StatCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(label, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+            Text(label, style: TextStyle(fontSize: 12, color: Colors.grey[700])),
             const SizedBox(height: 6),
             Text(valor, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           ],

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../main.dart';
+import '../widgets/poupai_logo.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -7,7 +9,14 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Carteira'),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: const [
+            PoupAiLogo(tamanho: 28),
+            SizedBox(width: 10),
+            Text('PoupAI'),
+          ],
+        ),
         actions: [
           IconButton(onPressed: () {}, icon: const Icon(Icons.notifications_outlined)),
         ],
@@ -21,7 +30,7 @@ class HomeScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: const [
-                  Text('Saldo atual', style: TextStyle(fontSize: 14, color: Colors.grey)),
+                  Text('Saldo atual', style: TextStyle(fontSize: 14, color: Color(0xFF616161))),
                   SizedBox(height: 8),
                   Text('R\$ 842,50', style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold)),
                 ],
@@ -39,13 +48,19 @@ class HomeScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 24),
-          const Text('Gastos por categoria', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+          const Text(
+            'Gastos por categoria',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: PoupAiColors.branco),
+          ),
           const SizedBox(height: 8),
           const _CategoriaBar(nome: 'Alimentação', valor: 210, total: 400, cor: Colors.orange),
           const _CategoriaBar(nome: 'Transporte', valor: 95, total: 400, cor: Colors.blue),
           const _CategoriaBar(nome: 'Lazer', valor: 60, total: 400, cor: Colors.purple),
           const SizedBox(height: 24),
-          const Text('Movimentações recentes', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+          const Text(
+            'Movimentações recentes',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: PoupAiColors.branco),
+          ),
           const SizedBox(height: 8),
           const _MovimentoTile(
             descricao: 'Mercado (dividido c/ 3)',
@@ -112,8 +127,11 @@ class _CategoriaBar extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(nome),
-              Text('R\$ ${valor.toStringAsFixed(2)}'),
+              Text(nome, style: const TextStyle(color: PoupAiColors.branco)),
+              Text(
+                'R\$ ${valor.toStringAsFixed(2)}',
+                style: TextStyle(color: PoupAiColors.branco.withValues(alpha: 0.85)),
+              ),
             ],
           ),
           const SizedBox(height: 4),
@@ -123,7 +141,7 @@ class _CategoriaBar extends StatelessWidget {
               value: valor / total,
               minHeight: 6,
               color: cor,
-              backgroundColor: cor.withValues(alpha: 0.15),
+              backgroundColor: Colors.white.withValues(alpha: 0.18),
             ),
           ),
         ],
