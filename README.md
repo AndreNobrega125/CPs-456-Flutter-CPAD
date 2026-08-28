@@ -80,8 +80,12 @@ O PoupAI fala como um amigo que entende de dinheiro, não como um banco. Diretri
 
 *Chamada final:* "PoupAI: a carteira pensada pra quem ainda não tem salário, mas já tem conta pra dividir."
 
-## Como rodar
+### Como rodar
+ 
+```bash
 
-bash
-flutter pub get.
-flutter run -d windows # ou -d chrom.
+flutter pub get
+
+flutter run -d windows # ou -d chrome
+
+ 
