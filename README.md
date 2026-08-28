@@ -83,6 +83,5 @@ O PoupAI fala como um amigo que entende de dinheiro, não como um banco. Diretri
 ## Como rodar
 
 bash
-flutter pub get
-flutter run -d windows 
-# ou -d chrom
+flutter pub get.
+flutter run -d windows # ou -d chrom.
