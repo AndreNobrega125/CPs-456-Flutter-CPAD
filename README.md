@@ -61,7 +61,7 @@ O PoupAI fala como um amigo que entende de dinheiro, não como um banco. Diretri
 - *Nunca alarmista* — alertas de saldo baixo são informativos, não geram culpa
 
 ## Identidade visual
-![Paleta de cores do PoupAI](./docs/paleta-cores.png)
+![Paleta de cores do PoupAI](./paleta-cores.png)
 - *Paleta*: borda/navegação #0B1428 (azul quase-preto) · fundo #223760 (azul médio) · cards #C7D8F0 (azul claro) · acento #D4A657 (dourado)
 - *Logo*: "P" estilizado em dourado sobre círculo azul-marinho — arquivo final do logo ainda pendente de envio pelo grupo; app usa placeholder vetorial equivalente (lib/widgets/poupai_logo.dart)
 - *Tipografia*: Roboto (padrão Material/Flutter) — não houve escolha deliberada de fonte customizada nesta fase
