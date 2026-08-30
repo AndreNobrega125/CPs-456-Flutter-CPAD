@@ -2,9 +2,11 @@
 
 # PoupAI
 
-<img src="./logoPoupAi.png" alt="Logo PoupAI" height="140">
-<img src="./logoPoupAiapp.png" alt="Logo PoupAI (ícone do app)" height="140">
-
+<p>
+  <img src="./logoPoupAi.png" alt="Logo PoupAI" height="140">
+  <img src="./logoPoupAiapp.png" alt="Logo PoupAI (ícone do app)" height="140">
+  <img src="./logoPoupAiPI.png" alt="Logo PoupAI (variação)" height="140">
+</p>
 
 App de fintech estudantil — controle financeiro pessoal, split de contas entre amigos e metas de economia, pensado pro ritmo de vida de quem vive de mesada, bolsa ou estágio.
 
