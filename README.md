@@ -92,6 +92,4 @@ O PoupAI fala como um amigo que entende de dinheiro, não como um banco. Diretri
 
 flutter pub get
 
-flutter run -d windows # ou -d chrome
-
- 
+flutter run -d windows
