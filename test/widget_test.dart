@@ -1,30 +1,62 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
+// Testes das regras de negócio do PoupAI (puro Dart, sem banco e sem internet).
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:cp_fintech_estudante/main.dart';
+import 'package:cp_fintech_estudante/models/grupo.dart';
+import 'package:cp_fintech_estudante/utils/formatters.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  group('formatarMoeda', () {
+    test('usa vírgula decimal e ponto de milhar', () {
+      expect(formatarMoeda(1234.5), 'R\$ 1.234,50');
+      expect(formatarMoeda(1234567.891), 'R\$ 1.234.567,89');
+    });
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    test('zero e valores pequenos', () {
+      expect(formatarMoeda(0), 'R\$ 0,00');
+      expect(formatarMoeda(7), 'R\$ 7,00');
+    });
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+    test('valor negativo mantém o sinal', () {
+      expect(formatarMoeda(-45), '-R\$ 45,00');
+    });
+  });
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+  group('Grupo (divisão de contas)', () {
+    Grupo grupoCom(List<DespesaGrupo> despesas) => Grupo(
+          id: 'g1',
+          nome: 'Apê teste',
+          membros: const ['Você', 'Marina'],
+          despesas: despesas,
+        );
+
+    test('sem despesas', () {
+      expect(grupoCom([]).resumoSaldo, 'Sem despesas ainda');
+    });
+
+    test('você pagou tudo: os outros te devem a sua parte', () {
+      final grupo = grupoCom([
+        const DespesaGrupo(id: '1', descricao: 'Internet', valor: 120, pagoPor: 'Você'),
+      ]);
+      expect(grupo.cotaPorPessoa, 60);
+      expect(grupo.saldoVoce, 60);
+      expect(grupo.resumoSaldo, 'Te devem R\$ 60,00');
+    });
+
+    test('outra pessoa pagou: você deve a sua parte', () {
+      final grupo = grupoCom([
+        const DespesaGrupo(id: '1', descricao: 'Mercado', valor: 100, pagoPor: 'Marina'),
+      ]);
+      expect(grupo.saldoVoce, -50);
+      expect(grupo.resumoSaldo, 'Você deve R\$ 50,00');
+    });
+
+    test('cada um pagou o mesmo valor: sem pendências', () {
+      final grupo = grupoCom([
+        const DespesaGrupo(id: '1', descricao: 'A', valor: 80, pagoPor: 'Você'),
+        const DespesaGrupo(id: '2', descricao: 'B', valor: 80, pagoPor: 'Marina'),
+      ]);
+      expect(grupo.resumoSaldo, 'Sem pendências');
+    });
   });
 }
