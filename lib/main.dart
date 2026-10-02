@@ -1,20 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+import 'core/theme/app_theme.dart';
 import 'screens/home_screen.dart';
-import 'screens/split_screen.dart';
 import 'screens/metas_screen.dart';
 import 'screens/perfil_screen.dart';
+import 'screens/split_screen.dart';
 
-// Paleta oficial do PoupAI
-class PoupAiColors {
-  static const azulEscuro = Color(0xFF0B1428); // topo/rodapé (AppBar, navegação) — bem mais escuro pra destacar do meio
-  static const azulMarinho = Color.fromARGB(255, 17, 27, 49); // acento geral (texto, ícones, FAB)
-  static const azulClaro = Color.fromARGB(255, 22, 35, 60); // fundo do meio (conteúdo) — navy forte, mesma família do azulEscuro mas nitidamente mais claro
-  static const dourado = Color(0xFFD4A657);
-  static const cardClaro = Color.fromARGB(255, 131, 157, 193); // fundo dos cards/botões — azul claro nítido, mesma família do fundo mas com contraste real
-  static const branco = Color(0xFFFFFFFF); // textos em cima do azul escuro (títulos de seção, nav)
-}
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: '.env');
 
-void main() {
+  // Sem credenciais reais no .env (ou ainda com o texto de exemplo), o Supabase
+  // não é inicializado e as telas mostram o erro de conexão com "Tentar de novo".
+  final url = dotenv.env['SUPABASE_URL'] ?? '';
+  final anonKey = dotenv.env['SUPABASE_ANON_KEY'] ?? '';
+  if (url.isNotEmpty && anonKey.isNotEmpty && !url.contains('SEU-PROJETO')) {
+    await Supabase.initialize(url: url, publishableKey: anonKey);
+    debugPrint('Supabase inicializado com URL: $url');
+  } else {
+    debugPrint('Supabase NÃO inicializado — .env vazio ou com placeholder. url="$url"');
+  }
+
   runApp(const MyApp());
 }
 
@@ -23,41 +31,16 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'PoupAI',
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: PoupAiColors.azulMarinho,
-          primary: PoupAiColors.azulMarinho,
-          secondary: PoupAiColors.dourado,
-          surface: PoupAiColors.cardClaro,
-        ),
-        scaffoldBackgroundColor: PoupAiColors.azulClaro,
-        cardTheme: const CardThemeData(
-          color: PoupAiColors.cardClaro,
-        ),
-        appBarTheme: const AppBarTheme(
-          backgroundColor: PoupAiColors.azulEscuro,
-          foregroundColor: PoupAiColors.dourado,
-        ),
-        navigationBarTheme: NavigationBarThemeData(
-          backgroundColor: PoupAiColors.azulEscuro,
-          indicatorColor: PoupAiColors.dourado.withValues(alpha: 0.25),
-          labelTextStyle: WidgetStateProperty.all(
-            const TextStyle(color: PoupAiColors.branco, fontSize: 12),
-          ),
-          iconTheme: WidgetStateProperty.resolveWith((states) {
-            final selecionado = states.contains(WidgetState.selected);
-            return IconThemeData(color: selecionado ? PoupAiColors.dourado : PoupAiColors.branco.withValues(alpha: 0.6));
-          }),
-        ),
-        floatingActionButtonTheme: const FloatingActionButtonThemeData(
-          backgroundColor: PoupAiColors.dourado,
-          foregroundColor: PoupAiColors.azulMarinho,
-        ),
+    // Tema claro e escuro (aula 17): por padrão segue o sistema; o Perfil permite forçar um.
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: themeModeNotifier,
+      builder: (context, modo, _) => MaterialApp(
+        title: 'PoupAI',
+        theme: AppTheme.light,
+        darkTheme: AppTheme.dark,
+        themeMode: modo,
+        home: const RootNav(),
       ),
-      home: const RootNav(),
     );
   }
 }

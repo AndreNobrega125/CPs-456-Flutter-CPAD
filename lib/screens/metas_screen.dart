@@ -1,21 +1,102 @@
 import 'package:flutter/material.dart';
+import '../core/theme/app_palette.dart';
+import '../models/meta.dart';
+import '../services/supabase_metas_service.dart';
+import '../utils/formatters.dart';
+import '../widgets/estados.dart';
+import '../widgets/poup_card.dart';
+import 'nova_meta_screen.dart';
 
-class MetasScreen extends StatelessWidget {
+class MetasScreen extends StatefulWidget {
   const MetasScreen({super.key});
 
   @override
+  State<MetasScreen> createState() => _MetasScreenState();
+}
+
+class _MetasScreenState extends State<MetasScreen> {
+  final SupabaseMetasService _service = SupabaseMetasService();
+  bool _carregando = true;
+  String? _erro;
+
+  @override
+  void initState() {
+    super.initState();
+    _carregar();
+  }
+
+  Future<void> _carregar() async {
+    setState(() {
+      _carregando = true;
+      _erro = null;
+    });
+    try {
+      await _service.carregar();
+    } catch (e) {
+      debugPrint('Erro ao carregar metas: $e');
+      _erro = 'Não foi possível carregar as metas. Verifique sua conexão.';
+    }
+    if (!mounted) return;
+    setState(() => _carregando = false);
+  }
+
+  Future<void> _abrirNovaMeta() async {
+    final novaMeta = await Navigator.push<Meta>(
+      context,
+      MaterialPageRoute(builder: (_) => const NovaMetaScreen()),
+    );
+
+    if (novaMeta == null) return;
+    if (!mounted) return;
+
+    try {
+      await _service.adicionar(novaMeta);
+    } catch (e) {
+      debugPrint('Erro ao criar meta: $e');
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Não foi possível criar a meta. Verifique sua conexão.')),
+      );
+      return;
+    }
+    if (!mounted) return;
+    setState(() {});
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Meta criada')),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final appBar = AppBar(title: const Text('Metas de economia'));
+
+    if (_carregando) {
+      return Scaffold(appBar: appBar, body: const Center(child: CircularProgressIndicator()));
+    }
+
+    if (_erro != null) {
+      return Scaffold(
+        appBar: appBar,
+        body: EstadoErro(mensagem: _erro!, onTentarDeNovo: _carregar),
+      );
+    }
+
+    final metas = _service.listar();
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Metas de economia')),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          _MetaCard(nome: 'Viagem de formatura', atual: 450, meta: 1500),
-          _MetaCard(nome: 'Notebook novo', atual: 900, meta: 3200),
-        ],
-      ),
+      appBar: appBar,
+      body: metas.isEmpty
+          ? const EstadoVazio(
+              icone: Icons.flag_outlined,
+              titulo: 'Nenhuma meta ainda',
+              mensagem: 'Crie uma meta, como "Viagem de formatura", e acompanhe quanto falta para chegar lá.',
+            )
+          : ListView(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
+              children: metas.map((m) => _MetaCard(meta: m)).toList(),
+            ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {},
+        onPressed: _abrirNovaMeta,
         icon: const Icon(Icons.add),
         label: const Text('Nova meta'),
       ),
@@ -24,26 +105,55 @@ class MetasScreen extends StatelessWidget {
 }
 
 class _MetaCard extends StatelessWidget {
-  final String nome;
-  final double atual;
-  final double meta;
+  final Meta meta;
 
-  const _MetaCard({required this.nome, required this.atual, required this.meta});
+  const _MetaCard({required this.meta});
 
   @override
   Widget build(BuildContext context) {
-    final progresso = atual / meta;
-    return Card(
+    final progresso = meta.valorAlvo <= 0 ? 0.0 : (meta.valorAtual / meta.valorAlvo).clamp(0.0, 1.0);
+    final faltam = (meta.valorAlvo - meta.valorAtual).clamp(0.0, double.infinity);
+
+    return PoupCard(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(nome, style: const TextStyle(fontWeight: FontWeight.w600)),
-            const SizedBox(height: 8),
-            LinearProgressIndicator(value: progresso, minHeight: 8),
-            const SizedBox(height: 8),
-            Text('R\$ ${atual.toStringAsFixed(2)} de R\$ ${meta.toStringAsFixed(2)}'),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    meta.nome,
+                    style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+                  ),
+                ),
+                Text(
+                  '${(progresso * 100).round()}%',
+                  style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(6),
+              child: LinearProgressIndicator(
+                value: progresso,
+                minHeight: 10,
+                color: PoupAiColors.azulEscuro,
+                backgroundColor: PoupAiColors.azulEscuro.withValues(alpha: 0.2),
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              '${formatarMoeda(meta.valorAtual)} de ${formatarMoeda(meta.valorAlvo)}',
+              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              faltam == 0 ? 'Meta atingida!' : 'Faltam ${formatarMoeda(faltam)}',
+              style: const TextStyle(fontSize: 14, color: PoupAiColors.textoCardSecundario),
+            ),
           ],
         ),
       ),

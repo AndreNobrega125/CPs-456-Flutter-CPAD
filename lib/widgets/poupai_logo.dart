@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../main.dart';
 
-// Placeholder vetorial do logo — trocar por Image.asset quando o arquivo real chegar
+// Símbolo oficial do PoupAI (assets/logo_poupai.png) dentro de um círculo claro,
+// já que a imagem tem fundo claro e o app é escuro.
 class PoupAiLogo extends StatelessWidget {
   final double tamanho;
 
@@ -12,20 +12,12 @@ class PoupAiLogo extends StatelessWidget {
     return Container(
       width: tamanho,
       height: tamanho,
+      padding: EdgeInsets.all(tamanho * 0.12),
       decoration: const BoxDecoration(
-        color: PoupAiColors.azulMarinho,
+        color: Color(0xFFF7F7F7),
         shape: BoxShape.circle,
       ),
-      alignment: Alignment.center,
-      child: Text(
-        'P',
-        style: TextStyle(
-          color: PoupAiColors.dourado,
-          fontSize: tamanho * 0.55,
-          fontWeight: FontWeight.bold,
-          fontStyle: FontStyle.italic,
-        ),
-      ),
+      child: Image.asset('assets/logo_poupai.png', fit: BoxFit.contain),
     );
   }
 }
