@@ -8,6 +8,43 @@ import '../widgets/poup_card.dart';
 import 'nova_despesa_grupo_screen.dart';
 import 'split_screen.dart' show corDoSaldo;
 
+/// Uma linha de "Como acertar": destaca em vermelho o que VOCÊ paga e em verde o que você recebe.
+class _AcertoTile extends StatelessWidget {
+  final Acerto acerto;
+
+  const _AcertoTile({required this.acerto});
+
+  @override
+  Widget build(BuildContext context) {
+    final voceDeve = acerto.de == 'Você';
+    final voceRecebe = acerto.para == 'Você';
+
+    final String texto;
+    final Color cor;
+    if (voceDeve) {
+      texto = 'Você paga a ${acerto.para}';
+      cor = PoupAiColors.negativo;
+    } else if (voceRecebe) {
+      texto = '${acerto.de} paga a você';
+      cor = PoupAiColors.positivo;
+    } else {
+      texto = '${acerto.de} paga a ${acerto.para}';
+      cor = PoupAiColors.textoCardSecundario;
+    }
+
+    return PoupCard(
+      child: ListTile(
+        leading: Icon(Icons.swap_horiz, color: cor),
+        title: Text(texto, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+        trailing: Text(
+          formatarMoeda(acerto.valor),
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: cor),
+        ),
+      ),
+    );
+  }
+}
+
 class GrupoDetalheScreen extends StatefulWidget {
   final Grupo grupo;
   final SplitService service;
@@ -88,6 +125,22 @@ class _GrupoDetalheScreenState extends State<GrupoDetalheScreen> {
               ),
             ),
           ),
+          if (grupo.despesas.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            const TituloSecao('Como acertar'),
+            if (grupo.acertos.isEmpty)
+              PoupCard(
+                child: ListTile(
+                  leading: const Icon(Icons.check_circle_outline, color: PoupAiColors.positivo),
+                  title: const Text(
+                    'Todos em dia',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                  ),
+                ),
+              )
+            else
+              ...grupo.acertos.map((a) => _AcertoTile(acerto: a)),
+          ],
           const SizedBox(height: 16),
           const TituloSecao('Despesas do grupo'),
           if (grupo.despesas.isEmpty)

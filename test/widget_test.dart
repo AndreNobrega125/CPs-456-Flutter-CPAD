@@ -57,6 +57,74 @@ void main() {
         const DespesaGrupo(id: '2', descricao: 'B', valor: 80, pagoPor: 'Marina'),
       ]);
       expect(grupo.resumoSaldo, 'Sem pendências');
+      expect(grupo.acertos, isEmpty);
+    });
+  });
+
+  group('Grupo: quem deve pra quem (acertos)', () {
+    test('dois integrantes: quem não pagou paga a sua parte a quem pagou', () {
+      final grupo = Grupo(
+        id: 'g',
+        nome: 'Dupla',
+        membros: const ['Você', 'Marina'],
+        despesas: [
+          const DespesaGrupo(id: '1', descricao: 'Internet', valor: 120, pagoPor: 'Você'),
+        ],
+      );
+      expect(grupo.acertos.length, 1);
+      expect(grupo.acertos.first.de, 'Marina');
+      expect(grupo.acertos.first.para, 'Você');
+      expect(grupo.acertos.first.valor, closeTo(60, 0.001));
+    });
+
+    test('caso do seed (Apê 302): 3 devedores pagam à Marina', () {
+      final grupo = Grupo(
+        id: 'g',
+        nome: 'Apê 302',
+        membros: const ['Você', 'Marina', 'Lucas', 'Bia'],
+        despesas: [
+          const DespesaGrupo(id: '1', descricao: 'Aluguel', valor: 2400, pagoPor: 'Marina'),
+          const DespesaGrupo(id: '2', descricao: 'Internet', valor: 120, pagoPor: 'Você'),
+          const DespesaGrupo(id: '3', descricao: 'Mercado', valor: 320, pagoPor: 'Lucas'),
+        ],
+      );
+      final porDevedor = {for (final a in grupo.acertos) a.de: a};
+      expect(grupo.acertos.length, 3);
+      expect(porDevedor['Bia']!.para, 'Marina');
+      expect(porDevedor['Bia']!.valor, closeTo(710, 0.001));
+      expect(porDevedor['Você']!.valor, closeTo(590, 0.001));
+      expect(porDevedor['Lucas']!.valor, closeTo(390, 0.001));
+    });
+
+    test('dois credores: o devedor paga ao maior primeiro e o resto ao outro', () {
+      final grupo = Grupo(
+        id: 'g',
+        nome: 'Trio',
+        membros: const ['Você', 'Ana', 'Léo'],
+        despesas: [
+          const DespesaGrupo(id: '1', descricao: 'A', valor: 150, pagoPor: 'Ana'),
+          const DespesaGrupo(id: '2', descricao: 'B', valor: 60, pagoPor: 'Léo'),
+        ],
+      );
+      // total 210, cota 70: Ana +80, Léo -10, Você -70 → Léo e Você pagam à Ana
+      final total = grupo.acertos.fold(0.0, (soma, a) => soma + a.valor);
+      expect(total, closeTo(80, 0.001));
+      expect(grupo.acertos.every((a) => a.para == 'Ana'), isTrue);
+    });
+
+    test('a soma dos acertos zera o grupo', () {
+      final grupo = Grupo(
+        id: 'g',
+        nome: 'Cinco',
+        membros: const ['Você', 'Pedro', 'Ana', 'Rafa', 'Carol'],
+        despesas: [
+          const DespesaGrupo(id: '1', descricao: 'Hospedagem', valor: 900, pagoPor: 'Você'),
+          const DespesaGrupo(id: '2', descricao: 'Ônibus', valor: 650, pagoPor: 'Pedro'),
+        ],
+      );
+      final pago = grupo.acertos.fold(0.0, (soma, a) => soma + a.valor);
+      final aReceber = grupo.saldos.values.where((v) => v > 0).fold(0.0, (soma, v) => soma + v);
+      expect(pago, closeTo(aReceber, 0.01));
     });
   });
 }

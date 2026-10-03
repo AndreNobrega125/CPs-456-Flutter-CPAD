@@ -14,6 +14,15 @@ class DespesaGrupo {
   });
 }
 
+/// Uma transferência sugerida para quitar o grupo: [de] paga [valor] a [para].
+class Acerto {
+  final String de;
+  final String para;
+  final double valor;
+
+  const Acerto({required this.de, required this.para, required this.valor});
+}
+
 class Grupo {
   final String id;
   final String nome;
@@ -36,6 +45,40 @@ class Grupo {
         .where((d) => d.pagoPor == 'Você')
         .fold(0.0, (soma, d) => soma + d.valor);
     return pagoPorVoce - cotaPorPessoa;
+  }
+
+  /// Saldo de cada integrante: o que pagou menos a sua cota (positivo = tem a receber).
+  Map<String, double> get saldos {
+    final cota = cotaPorPessoa;
+    return {
+      for (final m in membros)
+        m: despesas.where((d) => d.pagoPor == m).fold(0.0, (soma, d) => soma + d.valor) - cota,
+    };
+  }
+
+  /// Quem deve pagar quanto a quem para zerar o grupo, no menor número de
+  /// transferências (cada devedor paga ao credor com mais a receber).
+  List<Acerto> get acertos {
+    const folga = 0.005; // ignora diferenças menores que meio centavo
+    final credores = saldos.entries.where((e) => e.value > folga).toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+    final devedores = saldos.entries.where((e) => e.value < -folga).toList()
+      ..sort((a, b) => a.value.compareTo(b.value));
+
+    final restoCredor = [for (final c in credores) c.value];
+    final resultado = <Acerto>[];
+
+    for (final devedor in devedores) {
+      var aPagar = -devedor.value;
+      for (var i = 0; i < credores.length && aPagar > folga; i++) {
+        if (restoCredor[i] <= folga) continue;
+        final pagamento = aPagar < restoCredor[i] ? aPagar : restoCredor[i];
+        resultado.add(Acerto(de: devedor.key, para: credores[i].key, valor: pagamento));
+        restoCredor[i] -= pagamento;
+        aPagar -= pagamento;
+      }
+    }
+    return resultado;
   }
 
   String get resumoSaldo {
