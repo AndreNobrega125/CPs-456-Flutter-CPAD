@@ -23,36 +23,48 @@ class Acerto {
   const Acerto({required this.de, required this.para, required this.valor});
 }
 
+/// Um pagamento já feito entre dois integrantes: [de] pagou [valor] a [para].
+class Pagamento {
+  final String id;
+  final String de;
+  final String para;
+  final double valor;
+
+  const Pagamento({required this.id, required this.de, required this.para, required this.valor});
+}
+
 class Grupo {
   final String id;
   final String nome;
   final List<String> membros; // sempre inclui 'Você' como primeiro membro
   final List<DespesaGrupo> despesas;
+  final List<Pagamento> pagamentos;
 
   Grupo({
     required this.id,
     required this.nome,
     required this.membros,
     List<DespesaGrupo>? despesas,
-  }) : despesas = despesas ?? [];
+    List<Pagamento>? pagamentos,
+  })  : despesas = despesas ?? [],
+        pagamentos = pagamentos ?? [];
 
   double get totalGasto => despesas.fold(0, (soma, d) => soma + d.valor);
 
   double get cotaPorPessoa => membros.isEmpty ? 0 : totalGasto / membros.length;
 
-  double get saldoVoce {
-    final pagoPorVoce = despesas
-        .where((d) => d.pagoPor == 'Você')
-        .fold(0.0, (soma, d) => soma + d.valor);
-    return pagoPorVoce - cotaPorPessoa;
-  }
+  double get saldoVoce => saldos['Você'] ?? 0;
 
   /// Saldo de cada integrante: o que pagou menos a sua cota (positivo = tem a receber).
+  /// Pagamentos já registrados entram no cálculo: quem pagou sobe, quem recebeu desce.
   Map<String, double> get saldos {
     final cota = cotaPorPessoa;
     return {
       for (final m in membros)
-        m: despesas.where((d) => d.pagoPor == m).fold(0.0, (soma, d) => soma + d.valor) - cota,
+        m: despesas.where((d) => d.pagoPor == m).fold(0.0, (soma, d) => soma + d.valor) -
+            cota +
+            pagamentos.where((p) => p.de == m).fold(0.0, (soma, p) => soma + p.valor) -
+            pagamentos.where((p) => p.para == m).fold(0.0, (soma, p) => soma + p.valor),
     };
   }
 

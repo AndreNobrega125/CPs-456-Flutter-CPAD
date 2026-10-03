@@ -11,8 +11,9 @@ import 'split_screen.dart' show corDoSaldo;
 /// Uma linha de "Como acertar": destaca em vermelho o que VOCÊ paga e em verde o que você recebe.
 class _AcertoTile extends StatelessWidget {
   final Acerto acerto;
+  final VoidCallback onPagar;
 
-  const _AcertoTile({required this.acerto});
+  const _AcertoTile({required this.acerto, required this.onPagar});
 
   @override
   Widget build(BuildContext context) {
@@ -33,13 +34,29 @@ class _AcertoTile extends StatelessWidget {
     }
 
     return PoupCard(
-      child: ListTile(
-        leading: Icon(Icons.swap_horiz, color: cor),
-        title: Text(texto, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-        trailing: Text(
-          formatarMoeda(acerto.valor),
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: cor),
-        ),
+      child: Column(
+        children: [
+          ListTile(
+            leading: Icon(Icons.swap_horiz, color: cor),
+            title: Text(texto, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+            trailing: Text(
+              formatarMoeda(acerto.valor),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: cor),
+            ),
+          ),
+          Align(
+            alignment: Alignment.centerRight,
+            child: Padding(
+              padding: const EdgeInsets.only(right: 12, bottom: 8),
+              child: FilledButton.icon(
+                style: FilledButton.styleFrom(minimumSize: const Size(0, 40)),
+                onPressed: onPagar,
+                icon: const Icon(Icons.check, size: 18),
+                label: const Text('Marcar como pago'),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -81,6 +98,52 @@ class _GrupoDetalheScreenState extends State<GrupoDetalheScreen> {
     setState(() {});
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Despesa adicionada ao grupo')),
+    );
+  }
+
+  Future<void> _marcarComoPago(Acerto acerto) async {
+    final confirmou = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Registrar pagamento'),
+        content: Text(
+          '${acerto.de == 'Você' ? 'Você pagou' : '${acerto.de} pagou'} '
+          '${formatarMoeda(acerto.valor)} '
+          '${acerto.para == 'Você' ? 'a você' : 'a ${acerto.para}'}?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text('Cancelar', style: TextStyle(color: PoupAiPalette.of(ctx).texto)),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(minimumSize: const Size(110, 44)),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Confirmar'),
+          ),
+        ],
+      ),
+    );
+    if (confirmou != true) return;
+    if (!mounted) return;
+
+    try {
+      await widget.service.registrarPagamento(
+        widget.grupo.id,
+        Pagamento(id: '', de: acerto.de, para: acerto.para, valor: acerto.valor),
+      );
+    } catch (e) {
+      debugPrint('Erro ao registrar pagamento: $e');
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Não foi possível registrar o pagamento. Verifique sua conexão.')),
+      );
+      return;
+    }
+    if (!mounted) return;
+    setState(() {});
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Pagamento registrado')),
     );
   }
 
@@ -139,7 +202,26 @@ class _GrupoDetalheScreenState extends State<GrupoDetalheScreen> {
                 ),
               )
             else
-              ...grupo.acertos.map((a) => _AcertoTile(acerto: a)),
+              ...grupo.acertos.map((a) => _AcertoTile(acerto: a, onPagar: () => _marcarComoPago(a))),
+          ],
+          if (grupo.pagamentos.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            const TituloSecao('Pagamentos registrados'),
+            ...grupo.pagamentos.reversed.map(
+              (p) => PoupCard(
+                child: ListTile(
+                  leading: const Icon(Icons.check_circle_outline, color: PoupAiColors.positivo),
+                  title: Text(
+                    '${p.de} pagou a ${p.para}',
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  ),
+                  trailing: Text(
+                    formatarMoeda(p.valor),
+                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
+                  ),
+                ),
+              ),
+            ),
           ],
           const SizedBox(height: 16),
           const TituloSecao('Despesas do grupo'),

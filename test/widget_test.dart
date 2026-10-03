@@ -112,6 +112,44 @@ void main() {
       expect(grupo.acertos.every((a) => a.para == 'Ana'), isTrue);
     });
 
+    test('pagamento registrado quita o acerto e zera o saldo', () {
+      final grupo = Grupo(
+        id: 'g',
+        nome: 'Dupla',
+        membros: const ['Você', 'Marina'],
+        despesas: [
+          const DespesaGrupo(id: '1', descricao: 'Mercado', valor: 100, pagoPor: 'Marina'),
+        ],
+      );
+      expect(grupo.resumoSaldo, 'Você deve R\$ 50,00');
+
+      grupo.pagamentos.add(const Pagamento(id: 'p1', de: 'Você', para: 'Marina', valor: 50));
+
+      expect(grupo.acertos, isEmpty);
+      expect(grupo.saldoVoce, closeTo(0, 0.001));
+      expect(grupo.resumoSaldo, 'Sem pendências');
+    });
+
+    test('pagamento parcial reduz o que ainda falta pagar', () {
+      final grupo = Grupo(
+        id: 'g',
+        nome: 'Apê',
+        membros: const ['Você', 'Marina', 'Lucas', 'Bia'],
+        despesas: [
+          const DespesaGrupo(id: '1', descricao: 'Aluguel', valor: 2400, pagoPor: 'Marina'),
+          const DespesaGrupo(id: '2', descricao: 'Internet', valor: 120, pagoPor: 'Você'),
+          const DespesaGrupo(id: '3', descricao: 'Mercado', valor: 320, pagoPor: 'Lucas'),
+        ],
+        pagamentos: [
+          const Pagamento(id: 'p1', de: 'Você', para: 'Marina', valor: 190),
+        ],
+      );
+      // antes: Você devia 590 a Marina; depois de pagar 190 faltam 400
+      final seu = grupo.acertos.where((a) => a.de == 'Você').fold(0.0, (s, a) => s + a.valor);
+      expect(seu, closeTo(400, 0.001));
+      expect(grupo.saldoVoce, closeTo(-400, 0.001));
+    });
+
     test('a soma dos acertos zera o grupo', () {
       final grupo = Grupo(
         id: 'g',

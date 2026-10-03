@@ -4,6 +4,7 @@ abstract interface class SplitService {
   List<Grupo> listar();
   Future<void> adicionarGrupo(Grupo grupo);
   Future<void> adicionarDespesa(String grupoId, DespesaGrupo despesa);
+  Future<void> registrarPagamento(String grupoId, Pagamento pagamento);
 }
 
 class MockSplitService implements SplitService {
@@ -39,5 +40,11 @@ class MockSplitService implements SplitService {
   Future<void> adicionarDespesa(String grupoId, DespesaGrupo despesa) async {
     final grupo = _grupos.firstWhere((g) => g.id == grupoId);
     grupo.despesas.add(despesa);
+  }
+
+  @override
+  Future<void> registrarPagamento(String grupoId, Pagamento pagamento) async {
+    final grupo = _grupos.firstWhere((g) => g.id == grupoId);
+    grupo.pagamentos.add(pagamento);
   }
 }

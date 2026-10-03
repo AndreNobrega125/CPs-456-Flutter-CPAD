@@ -1,10 +1,11 @@
 -- Dados de exemplo realistas do PoupAI (estudante que vive de mesada/estágio e divide república).
 -- Rodar no SQL Editor do Supabase DEPOIS do schema.sql.
 --
--- ATENÇÃO: o bloco "limpar" apaga TODOS os dados das 4 tabelas (inclusive dados de teste).
--- Se quiser manter o que já existe, apague/comente as 4 linhas de delete.
+-- ATENÇÃO: o bloco "limpar" apaga TODOS os dados das 5 tabelas (inclusive dados de teste).
+-- Se quiser manter o que já existe, apague/comente as linhas de delete.
 
 -- limpar
+delete from pagamentos_grupo;
 delete from despesas_grupo;
 delete from grupos;
 delete from metas;
