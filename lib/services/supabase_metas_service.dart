@@ -26,11 +26,37 @@ class SupabaseMetasService implements MetasService {
 
   @override
   Future<void> adicionar(Meta meta) async {
-    await _client.from('metas').insert({
-      'nome': meta.nome,
-      'valor_atual': meta.valorAtual,
-      'valor_alvo': meta.valorAlvo,
-    });
-    _cache = [..._cache, meta];
+    // O id (uuid) é gerado pelo banco; guardamos o id real devolvido no cache.
+    final linha = await _client
+        .from('metas')
+        .insert({
+          'nome': meta.nome,
+          'valor_atual': meta.valorAtual,
+          'valor_alvo': meta.valorAlvo,
+        })
+        .select()
+        .single();
+    _cache = [
+      Meta(
+        id: linha['id'] as String,
+        nome: meta.nome,
+        valorAtual: meta.valorAtual,
+        valorAlvo: meta.valorAlvo,
+      ),
+      ..._cache,
+    ];
+  }
+
+  @override
+  Future<void> depositar(String id, double valor) async {
+    final i = _cache.indexWhere((m) => m.id == id);
+    if (i < 0) return;
+    final m = _cache[i];
+    final novoValor = m.valorAtual + valor;
+
+    await _client.from('metas').update({'valor_atual': novoValor}).eq('id', id);
+
+    _cache = [..._cache]
+      ..[i] = Meta(id: m.id, nome: m.nome, valorAtual: novoValor, valorAlvo: m.valorAlvo);
   }
 }

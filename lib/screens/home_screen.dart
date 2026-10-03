@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../core/theme/app_palette.dart';
 import '../models/movimento.dart';
 import '../services/supabase_carteira_service.dart';
+import '../services/supabase_split_service.dart';
 import '../utils/formatters.dart';
 import '../widgets/estados.dart';
 import '../widgets/poup_card.dart';
@@ -18,6 +19,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final SupabaseCarteiraService _service = SupabaseCarteiraService();
+  final SupabaseSplitService _splitService = SupabaseSplitService();
   bool _carregando = true;
   String? _erro;
 
@@ -33,7 +35,7 @@ class _HomeScreenState extends State<HomeScreen> {
       _erro = null;
     });
     try {
-      await _service.carregar();
+      await Future.wait([_service.carregar(), _splitService.carregar()]);
     } catch (e) {
       debugPrint('Erro ao carregar carteira: $e');
       _erro = 'Não foi possível carregar a carteira. Verifique sua conexão.';
@@ -161,6 +163,21 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ],
           ),
+          const SizedBox(height: 16),
+          _PendenciasSplit(
+            voceDeve: _splitService
+                .listar()
+                .where((g) => g.saldoVoce < -0.01)
+                .fold(0.0, (soma, g) => soma + g.saldoVoce.abs()),
+            teDevem: _splitService
+                .listar()
+                .where((g) => g.saldoVoce > 0.01)
+                .fold(0.0, (soma, g) => soma + g.saldoVoce),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const SplitScreen()),
+            ),
+          ),
           const SizedBox(height: 24),
           const TituloSecao('Gastos por categoria'),
           if (gastos.isEmpty)
@@ -183,6 +200,94 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 16),
         ],
       ),
+    );
+  }
+}
+
+class _PendenciasSplit extends StatelessWidget {
+  final double voceDeve;
+  final double teDevem;
+  final VoidCallback onTap;
+
+  const _PendenciasSplit({required this.voceDeve, required this.teDevem, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final semPendencias = voceDeve == 0 && teDevem == 0;
+    return PoupCard(
+      margin: EdgeInsets.zero,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.call_split, size: 20),
+                  const SizedBox(width: 8),
+                  const Expanded(
+                    child: Text(
+                      'Pendências de split',
+                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                  const Icon(Icons.chevron_right),
+                ],
+              ),
+              const SizedBox(height: 10),
+              if (semPendencias)
+                const Text(
+                  'Nenhuma pendência nos seus grupos.',
+                  style: TextStyle(fontSize: 14, color: PoupAiColors.textoCardSecundario),
+                )
+              else
+                Row(
+                  children: [
+                    Expanded(
+                      child: _PendenciaValor(
+                        rotulo: 'Você deve',
+                        valor: voceDeve,
+                        cor: PoupAiColors.negativo,
+                      ),
+                    ),
+                    Expanded(
+                      child: _PendenciaValor(
+                        rotulo: 'Te devem',
+                        valor: teDevem,
+                        cor: PoupAiColors.positivo,
+                      ),
+                    ),
+                  ],
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _PendenciaValor extends StatelessWidget {
+  final String rotulo;
+  final double valor;
+  final Color cor;
+
+  const _PendenciaValor({required this.rotulo, required this.valor, required this.cor});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(rotulo, style: const TextStyle(fontSize: 13, color: PoupAiColors.textoCardSecundario)),
+        const SizedBox(height: 2),
+        Text(
+          formatarMoeda(valor),
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: cor),
+        ),
+      ],
     );
   }
 }

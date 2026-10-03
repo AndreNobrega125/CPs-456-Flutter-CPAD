@@ -66,6 +66,32 @@ class _MetasScreenState extends State<MetasScreen> {
     );
   }
 
+  Future<void> _depositar(Meta meta) async {
+    final valor = await showDialog<double>(
+      context: context,
+      builder: (_) => _DialogDeposito(nomeMeta: meta.nome),
+    );
+
+    if (valor == null) return;
+    if (!mounted) return;
+
+    try {
+      await _service.depositar(meta.id, valor);
+    } catch (e) {
+      debugPrint('Erro ao depositar na meta: $e');
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Não foi possível registrar o depósito. Verifique sua conexão.')),
+      );
+      return;
+    }
+    if (!mounted) return;
+    setState(() {});
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('${formatarMoeda(valor)} guardados em "${meta.nome}"')),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final appBar = AppBar(title: const Text('Metas de economia'));
@@ -93,7 +119,7 @@ class _MetasScreenState extends State<MetasScreen> {
             )
           : ListView(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
-              children: metas.map((m) => _MetaCard(meta: m)).toList(),
+              children: metas.map((m) => _MetaCard(meta: m, onDepositar: () => _depositar(m))).toList(),
             ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _abrirNovaMeta,
@@ -104,10 +130,71 @@ class _MetasScreenState extends State<MetasScreen> {
   }
 }
 
+class _DialogDeposito extends StatefulWidget {
+  final String nomeMeta;
+
+  const _DialogDeposito({required this.nomeMeta});
+
+  @override
+  State<_DialogDeposito> createState() => _DialogDepositoState();
+}
+
+class _DialogDepositoState extends State<_DialogDeposito> {
+  final _controller = TextEditingController();
+  String? _erro;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _confirmar() {
+    final valor = double.tryParse(_controller.text.replaceAll(',', '.'));
+    if (valor == null || valor <= 0) {
+      setState(() => _erro = 'Informe um valor maior que zero');
+      return;
+    }
+    Navigator.pop(context, valor);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final p = PoupAiPalette.of(context);
+    return AlertDialog(
+      title: Text('Depositar em "${widget.nomeMeta}"'),
+      content: TextField(
+        controller: _controller,
+        autofocus: true,
+        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        onSubmitted: (_) => _confirmar(),
+        decoration: InputDecoration(
+          labelText: 'Quanto você quer guardar?',
+          prefixText: 'R\$ ',
+          hintText: '0,00',
+          errorText: _erro,
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text('Cancelar', style: TextStyle(color: p.texto)),
+        ),
+        FilledButton(
+          style: FilledButton.styleFrom(minimumSize: const Size(110, 44)),
+          onPressed: _confirmar,
+          child: const Text('Depositar'),
+        ),
+      ],
+    );
+  }
+}
+
 class _MetaCard extends StatelessWidget {
   final Meta meta;
+  final VoidCallback onDepositar;
 
-  const _MetaCard({required this.meta});
+  const _MetaCard({required this.meta, required this.onDepositar});
 
   @override
   Widget build(BuildContext context) {
@@ -153,6 +240,16 @@ class _MetaCard extends StatelessWidget {
             Text(
               faltam == 0 ? 'Meta atingida!' : 'Faltam ${formatarMoeda(faltam)}',
               style: const TextStyle(fontSize: 14, color: PoupAiColors.textoCardSecundario),
+            ),
+            const SizedBox(height: 10),
+            Align(
+              alignment: Alignment.centerRight,
+              child: FilledButton.icon(
+                style: FilledButton.styleFrom(minimumSize: const Size(0, 40)),
+                onPressed: onDepositar,
+                icon: const Icon(Icons.savings_outlined, size: 18),
+                label: const Text('Depositar'),
+              ),
             ),
           ],
         ),

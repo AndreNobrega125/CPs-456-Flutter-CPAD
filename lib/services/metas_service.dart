@@ -5,6 +5,7 @@ import '../models/meta.dart';
 abstract interface class MetasService {
   List<Meta> listar();
   Future<void> adicionar(Meta meta);
+  Future<void> depositar(String id, double valor);
 }
 
 class MockMetasService implements MetasService {
@@ -19,5 +20,13 @@ class MockMetasService implements MetasService {
   @override
   Future<void> adicionar(Meta meta) async {
     _metas.add(meta);
+  }
+
+  @override
+  Future<void> depositar(String id, double valor) async {
+    final i = _metas.indexWhere((m) => m.id == id);
+    if (i < 0) return;
+    final m = _metas[i];
+    _metas[i] = Meta(id: m.id, nome: m.nome, valorAtual: m.valorAtual + valor, valorAlvo: m.valorAlvo);
   }
 }
