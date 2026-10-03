@@ -271,7 +271,7 @@ Tema (lib/core/theme): PoupAiColors + PoupAiPalette (ThemeExtension) + AppTheme 
 flutter build apk --release
 ```
 
-O arquivo sai em `build/app/outputs/flutter-apk/app-release.apk`. Para instalar: copie para o celular Android e abra (permitir "fontes desconhecidas"), ou use `adb install -r app-release.apk`. O APK não fica no repositório; ele é entregue na aba **Releases** do GitHub.
+O arquivo sai em `build/app/outputs/flutter-apk/app-release.apk`. Para instalar: copie para o celular Android e abra (permitir "fontes desconhecidas"), ou use `adb install -r app-release.apk`. O APK não fica no repositório; ele é entregue na aba **Releases** do GitHub: [**baixar o APK (v1.0.0)**](https://github.com/AndreNobrega125/CPs-456-Flutter-CPAD/releases/tag/v1.0.0).
 
 > O arquivo `.env` (URL e chave **publishable** do Supabase) precisa existir antes do build; veja "Como rodar" na CP5.
 
