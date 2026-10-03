@@ -1,6 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Necessária no APK de release para o app falar com o Supabase. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <application
-        android:label="cp_fintech_estudante"
+        android:label="PoupAI"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
