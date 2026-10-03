@@ -124,7 +124,7 @@ Foco: sair do papel, com telas navegáveis, dados de exemplo e rodando em ambien
 | Protótipo funcional com dados de exemplo | App completo, com dados de exemplo realistas em `supabase/seed.sql` |
 | Navegação entre telas (fluxo principal completo) | 4 abas, formulários de cadastro e detalhe do grupo |
 | Integração de banco de dados | Supabase (Postgres) nas três áreas: Carteira, Metas e Split |
-| Ambiente de teste configurado | Windows desktop e Chrome |
+| Ambiente de teste configurado | Windows desktop, Chrome e emulador Android |
 | Documentação atualizada | Este README: como rodar e decisões técnicas |
 
 Fluxos implementados:
@@ -133,7 +133,7 @@ Fluxos implementados:
 - **Metas** — criar meta de economia com valor alvo; mostra porcentagem e quanto falta.
 - **Split** — criar grupo, adicionar integrantes, registrar despesa dividida entre eles; saldo ("você deve" / "te devem") calculado a partir das despesas do grupo.
 
-Verificado com `flutter analyze` sem avisos, `flutter test` (7 testes das regras de negócio), `flutter run -d windows` e `flutter run -d chrome --release`.
+Verificado com `flutter analyze` sem avisos, `flutter test` (13 testes das regras de negócio), `flutter run -d windows` e `flutter run -d chrome --release`.
 
 ## Melhorias de UX e legibilidade
 
@@ -172,9 +172,9 @@ flutter pub get
 
 **2. Criar o banco no Supabase**
 
-No painel do projeto: **SQL Editor → New query**, colar o conteúdo de [`supabase/schema.sql`](./supabase/schema.sql) e clicar em **Run**. Isso cria as tabelas `movimentos`, `metas`, `grupos` e `despesas_grupo`.
+No painel do projeto: **SQL Editor → New query**, colar o conteúdo de [`supabase/schema.sql`](./supabase/schema.sql) e clicar em **Run**. Isso cria as tabelas `movimentos`, `metas`, `grupos`, `despesas_grupo` e `pagamentos_grupo`.
 
-Opcional, para a demonstração: rodar também [`supabase/seed.sql`](./supabase/seed.sql), que preenche o app com dados de exemplo realistas (receitas e despesas em 4 categorias, 3 metas em estágios diferentes e 3 grupos com despesas). **Atenção:** o script apaga os dados existentes das 4 tabelas antes de inserir.
+Opcional, para a demonstração: rodar também [`supabase/seed.sql`](./supabase/seed.sql), que preenche o app com dados de exemplo realistas (receitas e despesas em 4 categorias, 3 metas em estágios diferentes e 3 grupos com despesas). **Atenção:** o script apaga os dados existentes das 5 tabelas antes de inserir.
 
 **3. Configurar as credenciais**
 
@@ -224,7 +224,7 @@ flutter test
 lib/
 ├── main.dart            # inicialização (.env, Supabase) e navegação principal
 ├── core/theme/          # app_palette.dart (cores) e app_theme.dart (tema claro e escuro)
-├── models/              # Movimento, Meta, Grupo, DespesaGrupo
+├── models/              # Movimento, Meta, Grupo, DespesaGrupo, Pagamento
 ├── services/            # interfaces + implementações mock e Supabase
 ├── screens/             # telas e formulários
 ├── widgets/             # PoupCard, estados vazio/erro, logo
@@ -262,7 +262,7 @@ Tema (lib/core/theme): PoupAiColors + PoupAiPalette (ThemeExtension) + AppTheme 
 
 - **Telas** só cuidam de interface e estado; não conhecem o banco.
 - **Serviços** seguem inversão de dependência: uma `abstract interface class` (ex.: `SplitService`) com duas implementações, `Mock*` (dados locais) e `Supabase*` (banco real). Trocar a fonte de dados não mexe nas telas.
-- **Modelos** (`Movimento`, `Meta`, `Grupo`) concentram as regras de negócio puras (saldo, cota, acertos), por isso são testáveis sem banco: `flutter test`.
+- **Modelos** (`Movimento`, `Meta`, `Grupo`, `DespesaGrupo`, `Pagamento`) concentram as regras de negócio puras (saldo, cota, acertos), por isso são testáveis sem banco: `flutter test`.
 - **Tema** com `ThemeExtension` permite tema claro/escuro em todo o app sem repetir cores nas telas.
 - **Banco:** 5 tabelas (`movimentos`, `metas`, `grupos`, `despesas_grupo`, `pagamentos_grupo`), scripts em `supabase/schema.sql` e `supabase/seed.sql`. Projetos que já tinham o schema da CP5 rodam também `supabase/migracao_pagamentos.sql`.
 
@@ -287,10 +287,12 @@ No CP6 aprendemos que "funciona no meu computador" não basta. O APK de release 
 Por fim, aprendemos a trabalhar em grupo com Git e GitHub, dividindo tarefas e registrando o progresso em commits. [O grupo pode acrescentar aqui um exemplo real de como se organizou.]
 
 Se fizéssemos de novo, incluiríamos login de usuários, testaríamos desde o início e geraríamos o APK mais cedo.
+
 ## Limitações conhecidas
 
 - **Sem login:** os dados são compartilhados por quem usar o app. As políticas RLS do Supabase estão abertas (`using (true)`) de propósito para o MVP; num produto real entraria Supabase Auth com RLS por usuário.
 - "Marcar como pago" é só um **registro** dentro do app: não há pagamento real (Pix, cartão etc.) nem confirmação do outro integrante.
 - Não há edição/exclusão de registros nesta versão.
+- O diferencial de "IA" citado na marca (categorização automática, sugestões de meta, alertas) **não foi implementado** no MVP: a categoria é escolhida pelo usuário e as metas e alertas são manuais.
 - O plano gratuito do Supabase pausa o projeto após cerca de 1 semana sem uso.
 - Testado em emulador Android; verificar também em aparelho físico.
