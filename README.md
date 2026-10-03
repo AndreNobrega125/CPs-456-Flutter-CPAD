@@ -5,8 +5,8 @@ App de fintech estudantil — controle financeiro pessoal, split de contas entre
 Projeto avaliativo das Checkpoints 4, 5 e 6 da disciplina **CPAD (Cross-Platform Application Development)** — FIAP, turma 2CCPG.
 
 <p>
-  <img src="./logoPoupAi.png" alt="Logo PoupAI" height="120">
-  <img src="./logoPoupAiapp.png" alt="Logo PoupAI (ícone do app)" height="120">
+  <img src="./docs/logoPoupAi.png" alt="Logo PoupAI" height="120">
+  <img src="./docs/logoPoupAiapp.png" alt="Logo PoupAI (ícone do app)" height="120">
 </p>
 
 ## Integrantes — turma 2CCPG
@@ -25,7 +25,7 @@ Projeto avaliativo das Checkpoints 4, 5 e 6 da disciplina **CPAD (Cross-Platform
 |---|---|---|
 | [CP4 — Idealização](#cp4--idealização) | Proposta, marca, identidade visual, pitch e projeto Flutter inicial | Concluído |
 | [CP5 — Protótipo funcional](#cp5--protótipo-funcional) | Telas navegáveis, banco de dados (Supabase), ambiente de teste e documentação | Concluído |
-| [CP6 — App final](#cp6--app-final) | MVP completo, APK instalável e documentação de arquitetura | Em andamento |
+| [CP6 — App final](#cp6--app-final) | MVP completo, APK instalável e documentação de arquitetura | Entregue |
 
 ---
 
@@ -76,14 +76,14 @@ O PoupAI fala como um amigo que entende de dinheiro, não como um banco. Diretri
 **Logo**
 
 <p>
-  <img src="./logoPoupAi.png" alt="Logo PoupAI" height="140">
-  <img src="./logoPoupAiapp.png" alt="Logo PoupAI (ícone do app)" height="140">
-  <img src="./logoPoupAiPI.png" alt="Logo PoupAI (símbolo)" height="140">
+  <img src="./docs/logoPoupAi.png" alt="Logo PoupAI" height="140">
+  <img src="./docs/logoPoupAiapp.png" alt="Logo PoupAI (ícone do app)" height="140">
+  <img src="./docs/logoPoupAiPI.png" alt="Logo PoupAI (símbolo)" height="140">
 </p>
 
 **Paleta**: borda/navegação `#0B1428` (azul quase-preto) · fundo `#16233C` (azul-marinho) · cards `#839DC1` (azul claro) · acento `#D4A657` (dourado)
 
-![Paleta de cores do PoupAI](./paleta-cores.svg)
+![Paleta de cores do PoupAI](./docs/paleta-cores.svg)
 
 **Tipografia**: Roboto (padrão Material/Flutter) — não houve escolha deliberada de fonte customizada nesta fase.
 
@@ -239,4 +239,58 @@ test/                    # testes das regras de negócio
 
 # CP6 — App final
 
-Em andamento. Escopo a ser fechado pelo grupo com base no edital da CP6: MVP completo, APK instalável testado (`flutter build apk --release`), documentação de arquitetura e aprendizados, e histórico de commits do repositório.
+MVP completo, APK instalável e documentação de arquitetura e aprendizados.
+
+## O que entrou no app final
+
+- **Dividir conta com acerto automático:** cada grupo mostra **quem deve pagar quanto a quem** ("Você paga a Marina R$ 590,00"), usando o menor número de transferências (`Grupo.acertos`, coberto por testes unitários).
+- **Carteira com pendências:** o card de pendências soma o que você deve e o que te devem em todos os grupos.
+- **Metas com depósito:** botão "Depositar" em cada meta, com barra de progresso e "Faltam R$ …".
+- **Perfil:** aparência (sistema/claro/escuro) e card "Sobre o PoupAI"; itens fictícios removidos.
+- **Ícone do app** com a logo do PoupAI (`flutter_launcher_icons`).
+- **APK de release** com permissão de internet e instalação testada em emulador Android.
+
+## Arquitetura
+
+```
+Telas (lib/screens)  →  Serviços (lib/services)  →  Supabase (Postgres na nuvem)
+        │                      │
+        └── Widgets (lib/widgets)   └── Modelos (lib/models)
+Tema (lib/core/theme): PoupAiColors + PoupAiPalette (ThemeExtension) + AppTheme claro/escuro
+```
+
+- **Telas** só cuidam de interface e estado; não conhecem o banco.
+- **Serviços** seguem inversão de dependência: uma `abstract interface class` (ex.: `SplitService`) com duas implementações, `Mock*` (dados locais) e `Supabase*` (banco real). Trocar a fonte de dados não mexe nas telas.
+- **Modelos** (`Movimento`, `Meta`, `Grupo`) concentram as regras de negócio puras (saldo, cota, acertos), por isso são testáveis sem banco: `flutter test`.
+- **Tema** com `ThemeExtension` permite tema claro/escuro em todo o app sem repetir cores nas telas.
+- **Banco:** 4 tabelas (`movimentos`, `metas`, `grupos`, `despesas_grupo`), scripts em `supabase/schema.sql` e `supabase/seed.sql`.
+
+## Como gerar e instalar o APK
+
+```bash
+flutter build apk --release
+```
+
+O arquivo sai em `build/app/outputs/flutter-apk/app-release.apk`. Para instalar: copie para o celular Android e abra (permitir "fontes desconhecidas"), ou use `adb install -r app-release.apk`. O APK não fica no repositório; ele é entregue na aba **Releases** do GitHub.
+
+> O arquivo `.env` (URL e chave **publishable** do Supabase) precisa existir antes do build; veja "Como rodar" na CP5.
+
+## Aprendizados do grupo
+
+> **Rascunho para o grupo revisar:** ajustem com suas palavras e completem o trecho entre colchetes.
+
+Ao longo dos três checkpoints, aprendemos que construir um app é mais do que programar telas. No CP4 definimos o problema, o público, o MVP e a identidade visual. Isso mostrou que uma boa ideia e uma marca consistente guiam todas as decisões seguintes.
+
+No CP5 evoluímos de um protótipo com dados de exemplo para um app com banco de dados real (Supabase). Aprendemos a separar telas, regras de negócio e dados, a modelar tabelas, a proteger chaves de acesso e a lidar com operações assíncronas e com erros. Também vimos que a experiência do usuário importa: textos legíveis, bom contraste, mensagens de erro claras e tema claro e escuro.
+
+No CP6 aprendemos que "funciona no meu computador" não basta. O APK de release se comportou diferente do modo de desenvolvimento, e só testando o app instalado descobrimos problemas que não apareciam antes (como a permissão de internet). Também enfrentamos questões de ambiente (Windows, Gradle, segurança do sistema) e aprendemos a investigar o erro até achar a causa. Escrevemos testes para as regras de negócio e documentamos a arquitetura, as limitações e o passo a passo para rodar o projeto.
+
+Por fim, aprendemos a trabalhar em grupo com Git e GitHub, dividindo tarefas e registrando o progresso em commits. [O grupo pode acrescentar aqui um exemplo real de como se organizou.]
+
+Se fizéssemos de novo, incluiríamos login de usuários, testaríamos desde o início e geraríamos o APK mais cedo.
+## Limitações conhecidas
+
+- **Sem login:** os dados são compartilhados por quem usar o app. As políticas RLS do Supabase estão abertas (`using (true)`) de propósito para o MVP; num produto real entraria Supabase Auth com RLS por usuário.
+- Não há edição/exclusão de registros nesta versão.
+- O plano gratuito do Supabase pausa o projeto após cerca de 1 semana sem uso.
+- Testado em emulador Android; verificar também em aparelho físico.
