@@ -19,11 +19,11 @@ Legenda: `[x]` feito e verificado · `[ ]` falta (responsável entre parênteses
 - [x] Dados no Supabase (4 tabelas) com `supabase/schema.sql`
 - [x] Dados de exemplo em `supabase/seed.sql`
 - [x] Camada de serviço com interface + `Mock*` + `Supabase*`
-- [ ] Rodar `seed.sql` de novo antes da demo (Reserva está em 100% por teste) (André)
+- [x] `seed.sql` rodado e conferido no app (Metas: 52%, 11%, 94%). Rodar de novo só se alguém mexer nos dados (André)
 
 **Ambiente sem erro na apresentação (20%)**
 - [x] `flutter analyze` sem problemas
-- [x] `flutter test`: 11 testes passando
+- [x] `flutter test`: 13 testes passando
 - [x] Roda no Windows, no emulador Android e no APK
 - [ ] Abrir o app 1 dia antes da demo (Supabase gratuito pausa após ~1 semana parado) (André)
 - [ ] Testar internet/Wi-Fi do local da demo (todos)
@@ -43,20 +43,21 @@ Legenda: `[x]` feito e verificado · `[ ]` falta (responsável entre parênteses
 - [x] Carteira com saldo, gastos por categoria e pendências de split
 - [x] Metas com barra de progresso e depósito
 - [x] Split com "quem deve pra quem" (menor número de transferências)
+- [x] Botão "Marcar como pago": registra o pagamento no banco, recalcula os saldos e lista o histórico
 - [x] Regras de negócio cobertas por testes unitários
 
 **UI/UX e identidade (20%)**
 - [x] Textos legíveis e contraste revisados
 - [x] Ícone do app com a logo
 - [x] Perfil sem itens fictícios
-- [ ] Conferir o ícone na tela inicial do celular/emulador (André)
+- [x] Ícone conferido no app (André)
 
 **APK instalável e funcional (20%)**
 - [x] `flutter build apk --release` gerado (50,6 MB)
 - [x] Permissão de internet no AndroidManifest
 - [x] Instalado e testado no emulador
 - [ ] Testar em celular Android físico (grupo)
-- [ ] Anexar o APK em uma Release do GitHub e colocar o link no README (André)
+- [x] APK anexado na Release v1.0.0 e link no README (André)
 
 **Documentação (15%)**
 - [x] Arquitetura descrita no README
@@ -66,10 +67,10 @@ Legenda: `[x]` feito e verificado · `[ ]` falta (responsável entre parênteses
 **Organização do repositório (15%)**
 - [x] `.env` fora do Git; nenhuma chave secreta no código
 - [x] Imagens organizadas em `docs/`
-- [ ] Commitar as mudanças da CP6 em commits pequenos por área (André)
+- [x] Mudanças da CP6 commitadas em commits pequenos por área (André)
 - [ ] Cada integrante commitar a sua própria parte (documentação, aprendizados, etc.) (grupo)
 - [ ] Conferir `git log`: histórico com mais de um autor, mensagens claras (grupo)
-- [ ] `git push` e conferir no GitHub que as imagens do README aparecem (André)
+- [x] `git push` feito; imagens do README respondem no GitHub (André)
 
 ## Antes de entregar (revisão final)
 - [ ] Clonar o repo em outra pasta, criar o `.env` e rodar `flutter pub get` + `flutter run`

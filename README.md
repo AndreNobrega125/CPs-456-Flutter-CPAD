@@ -244,6 +244,7 @@ MVP completo, APK instalável e documentação de arquitetura e aprendizados.
 ## O que entrou no app final
 
 - **Dividir conta com acerto automático:** cada grupo mostra **quem deve pagar quanto a quem** ("Você paga a Marina R$ 590,00"), usando o menor número de transferências (`Grupo.acertos`, coberto por testes unitários).
+- **Marcar como pago:** cada linha de "Como acertar" tem o botão **Marcar como pago**, que registra o pagamento no banco (tabela `pagamentos_grupo`), recalcula os saldos e lista o histórico em "Pagamentos registrados".
 - **Carteira com pendências:** o card de pendências soma o que você deve e o que te devem em todos os grupos.
 - **Metas com depósito:** botão "Depositar" em cada meta, com barra de progresso e "Faltam R$ …".
 - **Perfil:** aparência (sistema/claro/escuro) e card "Sobre o PoupAI"; itens fictícios removidos.
@@ -263,7 +264,7 @@ Tema (lib/core/theme): PoupAiColors + PoupAiPalette (ThemeExtension) + AppTheme 
 - **Serviços** seguem inversão de dependência: uma `abstract interface class` (ex.: `SplitService`) com duas implementações, `Mock*` (dados locais) e `Supabase*` (banco real). Trocar a fonte de dados não mexe nas telas.
 - **Modelos** (`Movimento`, `Meta`, `Grupo`) concentram as regras de negócio puras (saldo, cota, acertos), por isso são testáveis sem banco: `flutter test`.
 - **Tema** com `ThemeExtension` permite tema claro/escuro em todo o app sem repetir cores nas telas.
-- **Banco:** 4 tabelas (`movimentos`, `metas`, `grupos`, `despesas_grupo`), scripts em `supabase/schema.sql` e `supabase/seed.sql`.
+- **Banco:** 5 tabelas (`movimentos`, `metas`, `grupos`, `despesas_grupo`, `pagamentos_grupo`), scripts em `supabase/schema.sql` e `supabase/seed.sql`. Projetos que já tinham o schema da CP5 rodam também `supabase/migracao_pagamentos.sql`.
 
 ## Como gerar e instalar o APK
 
@@ -277,8 +278,6 @@ O arquivo sai em `build/app/outputs/flutter-apk/app-release.apk`. Para instalar:
 
 ## Aprendizados do grupo
 
-> **Rascunho para o grupo revisar:** ajustem com suas palavras e completem o trecho entre colchetes.
-
 Ao longo dos três checkpoints, aprendemos que construir um app é mais do que programar telas. No CP4 definimos o problema, o público, o MVP e a identidade visual. Isso mostrou que uma boa ideia e uma marca consistente guiam todas as decisões seguintes.
 
 No CP5 evoluímos de um protótipo com dados de exemplo para um app com banco de dados real (Supabase). Aprendemos a separar telas, regras de negócio e dados, a modelar tabelas, a proteger chaves de acesso e a lidar com operações assíncronas e com erros. Também vimos que a experiência do usuário importa: textos legíveis, bom contraste, mensagens de erro claras e tema claro e escuro.
@@ -291,6 +290,7 @@ Se fizéssemos de novo, incluiríamos login de usuários, testaríamos desde o i
 ## Limitações conhecidas
 
 - **Sem login:** os dados são compartilhados por quem usar o app. As políticas RLS do Supabase estão abertas (`using (true)`) de propósito para o MVP; num produto real entraria Supabase Auth com RLS por usuário.
+- "Marcar como pago" é só um **registro** dentro do app: não há pagamento real (Pix, cartão etc.) nem confirmação do outro integrante.
 - Não há edição/exclusão de registros nesta versão.
 - O plano gratuito do Supabase pausa o projeto após cerca de 1 semana sem uso.
 - Testado em emulador Android; verificar também em aparelho físico.
