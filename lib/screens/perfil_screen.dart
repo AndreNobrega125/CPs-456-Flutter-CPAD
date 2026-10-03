@@ -9,12 +9,6 @@ import '../widgets/poupai_logo.dart';
 class PerfilScreen extends StatelessWidget {
   const PerfilScreen({super.key});
 
-  void _emBreve(BuildContext context, String recurso) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('$recurso: em breve')),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final p = PoupAiPalette.of(context);
@@ -56,31 +50,20 @@ class PerfilScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 24),
-          _PerfilItem(
-            icon: Icons.edit_outlined,
-            label: 'Editar dados',
-            onTap: () => _emBreve(context, 'Editar dados'),
-          ),
-          _PerfilItem(
-            icon: Icons.notifications_none,
-            label: 'Notificações',
-            onTap: () => _emBreve(context, 'Notificações'),
-          ),
-          _PerfilItem(
-            icon: Icons.security_outlined,
-            label: 'Privacidade',
-            onTap: () => _emBreve(context, 'Privacidade'),
-          ),
-          _PerfilItem(
-            icon: Icons.help_outline,
-            label: 'Ajuda',
-            onTap: () => _emBreve(context, 'Ajuda'),
-          ),
-          _PerfilItem(
-            icon: Icons.logout,
-            label: 'Sair',
-            destructivo: true,
-            onTap: () => _emBreve(context, 'Sair'),
+          const TituloSecao('Sobre o PoupAI'),
+          const PoupCard(
+            margin: EdgeInsets.zero,
+            child: Padding(
+              padding: EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _LinhaSobre(rotulo: 'Versão', valor: '1.0.0 (CP6 · app final)'),
+                  _LinhaSobre(rotulo: 'Projeto', valor: 'CPAD · FIAP · Turma 2CCPG'),
+                  _LinhaSobre(rotulo: 'Dados', valor: 'Salvos na nuvem (Supabase)'),
+                ],
+              ),
+            ),
           ),
         ],
       ),
@@ -88,28 +71,30 @@ class PerfilScreen extends StatelessWidget {
   }
 }
 
-class _PerfilItem extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final bool destructivo;
-  final VoidCallback onTap;
+class _LinhaSobre extends StatelessWidget {
+  final String rotulo;
+  final String valor;
 
-  const _PerfilItem({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-    this.destructivo = false,
-  });
+  const _LinhaSobre({required this.rotulo, required this.valor});
 
   @override
   Widget build(BuildContext context) {
-    final cor = destructivo ? PoupAiColors.negativo : PoupAiColors.textoCard;
-    return PoupCard(
-      child: ListTile(
-        leading: Icon(icon, color: cor),
-        title: Text(label, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: cor)),
-        trailing: Icon(Icons.chevron_right, color: cor),
-        onTap: onTap,
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 76,
+            child: Text(
+              rotulo,
+              style: const TextStyle(fontSize: 14, color: PoupAiColors.textoCardSecundario),
+            ),
+          ),
+          Expanded(
+            child: Text(valor, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+          ),
+        ],
       ),
     );
   }
