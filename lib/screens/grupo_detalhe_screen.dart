@@ -11,7 +11,7 @@ import 'split_screen.dart' show corDoSaldo;
 /// Uma linha de "Como acertar": destaca em vermelho o que VOCÊ paga e em verde o que você recebe.
 class _AcertoTile extends StatelessWidget {
   final Acerto acerto;
-  final VoidCallback onPagar;
+  final VoidCallback? onPagar;
 
   const _AcertoTile({required this.acerto, required this.onPagar});
 
@@ -73,6 +73,9 @@ class GrupoDetalheScreen extends StatefulWidget {
 }
 
 class _GrupoDetalheScreenState extends State<GrupoDetalheScreen> {
+  // Evita registrar o mesmo pagamento duas vezes com toques repetidos.
+  bool _registrandoPagamento = false;
+
   Future<void> _abrirNovaDespesa() async {
     final despesa = await Navigator.push<DespesaGrupo>(
       context,
@@ -102,6 +105,9 @@ class _GrupoDetalheScreenState extends State<GrupoDetalheScreen> {
   }
 
   Future<void> _marcarComoPago(Acerto acerto) async {
+    if (_registrandoPagamento) return;
+    setState(() => _registrandoPagamento = true);
+
     final confirmou = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -124,8 +130,11 @@ class _GrupoDetalheScreenState extends State<GrupoDetalheScreen> {
         ],
       ),
     );
-    if (confirmou != true) return;
     if (!mounted) return;
+    if (confirmou != true) {
+      setState(() => _registrandoPagamento = false);
+      return;
+    }
 
     try {
       await widget.service.registrarPagamento(
@@ -135,13 +144,14 @@ class _GrupoDetalheScreenState extends State<GrupoDetalheScreen> {
     } catch (e) {
       debugPrint('Erro ao registrar pagamento: $e');
       if (!mounted) return;
+      setState(() => _registrandoPagamento = false);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Não foi possível registrar o pagamento. Verifique sua conexão.')),
       );
       return;
     }
     if (!mounted) return;
-    setState(() {});
+    setState(() => _registrandoPagamento = false);
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Pagamento registrado')),
     );
@@ -202,7 +212,7 @@ class _GrupoDetalheScreenState extends State<GrupoDetalheScreen> {
                 ),
               )
             else
-              ...grupo.acertos.map((a) => _AcertoTile(acerto: a, onPagar: () => _marcarComoPago(a))),
+              ...grupo.acertos.map((a) => _AcertoTile(acerto: a, onPagar: _registrandoPagamento ? null : () => _marcarComoPago(a))),
           ],
           if (grupo.pagamentos.isNotEmpty) ...[
             const SizedBox(height: 16),
