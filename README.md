@@ -284,7 +284,7 @@ No CP5 evoluímos de um protótipo com dados de exemplo para um app com banco de
 
 No CP6 aprendemos que "funciona no meu computador" não basta. O APK de release se comportou diferente do modo de desenvolvimento, e só testando o app instalado descobrimos problemas que não apareciam antes (como a permissão de internet). Também enfrentamos questões de ambiente (Windows, Gradle, segurança do sistema) e aprendemos a investigar o erro até achar a causa. Escrevemos testes para as regras de negócio e documentamos a arquitetura, as limitações e o passo a passo para rodar o projeto.
 
-Por fim, aprendemos a trabalhar em grupo com Git e GitHub, dividindo tarefas e registrando o progresso em commits. [O grupo pode acrescentar aqui um exemplo real de como se organizou.]
+Por fim, aprendemos a trabalhar em grupo com Git e GitHub, dividindo tarefas e registrando o progresso em commits.
 
 Se fizéssemos de novo, incluiríamos login de usuários, testaríamos desde o início e geraríamos o APK mais cedo.
 
