@@ -251,6 +251,23 @@ MVP completo, APK instalável e documentação de arquitetura e aprendizados.
 - **Ícone do app** com a logo do PoupAI (`flutter_launcher_icons`).
 - **APK de release** com permissão de internet e instalação testada em emulador Android.
 
+## Telas do app
+
+Capturas do APK de release no emulador Android, com os dados de exemplo do `seed.sql`. O tema claro e o escuro são escolhidos em **Perfil → Aparência**.
+
+| Tela | Tema claro | Tema escuro |
+|---|---|---|
+| Carteira | <img src="./docs/prints/claro-01-carteira.png" width="170"> | <img src="./docs/prints/escuro-01-carteira.png" width="170"> |
+| Nova receita | <img src="./docs/prints/claro-02-nova-receita.png" width="170"> | <img src="./docs/prints/escuro-02-nova-receita.png" width="170"> |
+| Nova despesa | <img src="./docs/prints/claro-03-nova-despesa.png" width="170"> | <img src="./docs/prints/escuro-03-nova-despesa.png" width="170"> |
+| Dividir contas | <img src="./docs/prints/claro-04-split-grupos.png" width="170"> | <img src="./docs/prints/escuro-04-split-grupos.png" width="170"> |
+| Novo grupo | <img src="./docs/prints/claro-05-novo-grupo.png" width="170"> | <img src="./docs/prints/escuro-05-novo-grupo.png" width="170"> |
+| Grupo: Como acertar e Marcar como pago | <img src="./docs/prints/claro-06-grupo-apartamento.png" width="170"> | <img src="./docs/prints/escuro-06-grupo-apartamento.png" width="170"> |
+| Metas | <img src="./docs/prints/claro-07-metas.png" width="170"> | <img src="./docs/prints/escuro-07-metas.png" width="170"> |
+| Nova meta | <img src="./docs/prints/claro-08-nova-meta.png" width="170"> | <img src="./docs/prints/escuro-08-nova-meta.png" width="170"> |
+| Depositar em uma meta | <img src="./docs/prints/claro-09-depositar.png" width="170"> | <img src="./docs/prints/escuro-09-depositar.png" width="170"> |
+| Perfil e aparência | <img src="./docs/prints/claro-10-perfil.png" width="170"> | <img src="./docs/prints/escuro-10-perfil.png" width="170"> |
+
 ## Arquitetura
 
 ```
